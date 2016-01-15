@@ -1,0 +1,21 @@
+1) This extension requires a Burp Suite Pro license.
+2) You must initially load this file into the extension tab of Burp.
+        This will perpetually keep it loaded in your burp configuration.
+        This will have to be done for every new version of burp you have locally installed.
+        Note: It is required that you provide the path to the Jython Jar file.
+                This is installable via CentOS 6.5 by `yum install jython-2.2.1-4.8`
+                The file is then located at `/usr/share/java/jython.jar`
+3) Carbonator only runs if using the provided 'launch_burp.sh' script.
+        usage: ./launch_burp.sh file_containing_list_of_urls_one_per_line
+        This will open burp, run scan against the supplied information, generate the report, then close burp.
+4) Provide your feedback, desired changes and code updates.
+
+Please Note: Carbonator is available directly from within the Burp Suite Pro BApp Store.
+
+Visit the BApp store for more information: https://pro.portswigger.net/bappstore/
+
+For questions or feature requests contact Integris Security at one of the two following contact methods
+        carbonator at integris security dot com
+        https://www.integrissecurity.com/index.php?contactus
+
+
