@@ -17,7 +17,8 @@ from urlparse import urlparse
 
 class BurpExtender(IBurpExtender, IHttpListener, IScannerListener):
     def registerExtenderCallbacks(self, callbacks):
-
+	
+	self.filename = ""
 	self._callbacks = callbacks
 	self._callbacks.setExtensionName("Carbonator")
 	self._helpers = self._callbacks.getHelpers()
@@ -25,7 +26,8 @@ class BurpExtender(IBurpExtender, IHttpListener, IScannerListener):
 
 	self.spider_results=[]
 	self.scanner_results=[]
-	self.packet_timeout=5
+	self.packet_timeout=10
+	#self.packet_timeout=5
 
 	self.last_packet_seen= int(time.time()) #initialize the start of the spider/scan
 
@@ -37,19 +39,32 @@ class BurpExtender(IBurpExtender, IHttpListener, IScannerListener):
 	for url in self.urls:	
 		print url
 	for url in self.urls:	
+		parsed_url = urlparse(url)
+		self.fqdn = parsed_url.hostname
+		self.path = parsed_url.path
+		self.scheme = parsed_url.scheme
+		self.port = 0
+
+		if parsed_url.port==None:
+			if self.scheme=="http":
+				self.port = int(80)
+				url = url.strip()
+				url += ":80"
+			if self.scheme=="https":
+				self.port = int(443)
+				url = url.strip()
+				url += ":443"
+		else:
+			self.port = int(parsed_url.port)
+
 		print "Initiating Carbonator Against: ", str(url)
+
 		self.url = URL(url)
 
 		#print "Initiating Carbonator Against: ", str(self.url)
 		#add to scope if not already in there.
 		if self._callbacks.isInScope(self.url) == 0:
 			self._callbacks.includeInScope(self.url)
-
-		parsed_url = urlparse(url)
-		self.fqdn = parsed_url.hostname
-		self.path = parsed_url.path
-		self.port = parsed_url.port
-		self.scheme = parsed_url.scheme
 
 		#added to ensure that the root directory is scanned
 		base_request = str.encode(str("GET "+self.path+" HTTP/1.1\nHost: "+self.fqdn+"\n\n"))
@@ -68,7 +83,7 @@ class BurpExtender(IBurpExtender, IHttpListener, IScannerListener):
 	print "Removing Listeners"
 	self._callbacks.removeHttpListener(self)
 	self._callbacks.removeScannerListener(self)
-	self._callbacks.excludeFromScope(self.url)
+	self._callbacks.excludeFromScope(self.url)	
 
 	print "Generating Report"
 	self.generateReport('HTML')
@@ -101,7 +116,9 @@ class BurpExtender(IBurpExtender, IHttpListener, IScannerListener):
 	if format != 'XML':
 		format = 'HTML'	
 
-	file_name = 'IntegrisSecurity_Carbonator_'+self.scheme+'_'+self.fqdn+'_'+str(self.port)+'.'+format.lower()
+	#file_name = 'IntegrisSecurity_Carbonator_'+self.scheme+'_'+self.fqdn+'_'+str(self.port)+'.'+format.lower()
+	filename, file_extension = os.path.splitext(self.filename)
+	file_name = 'IntegrisSecurity_Carbonator_'+filename+"."+format.lower()
 	self._callbacks.generateScanReport(format,self.scanner_results,File(file_name))
 
 	time.sleep(5)
@@ -126,9 +143,11 @@ class BurpExtender(IBurpExtender, IHttpListener, IScannerListener):
 			with open(filename) as f:
     				lines = f.readlines()
 			self.urls = lines
+			self.filename = filename
+
 	else:
 		print "Invalid command line arguments supplied"
-		print cli[0]
+		print cli[0], cli[1], cli[2], cli[3]
 		return False
 						
 	#elif cli[0] == 'https' or cli[0] == 'http': #cli[0]=scheme,cli[1]=fqdn,cli[2]=port
