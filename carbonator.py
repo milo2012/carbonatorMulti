@@ -147,7 +147,8 @@ class BurpExtender(IBurpExtender, IHttpListener, IScannerListener):
 
 	else:
 		print "Invalid command line arguments supplied"
-		print cli[0], cli[1], cli[2], cli[3]
+		print cli[0]
+		#print cli[0], cli[1], cli[2], cli[3]
 		return False
 						
 	#elif cli[0] == 'https' or cli[0] == 'http': #cli[0]=scheme,cli[1]=fqdn,cli[2]=port
